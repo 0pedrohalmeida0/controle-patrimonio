@@ -56,8 +56,8 @@ src/
 
 ## Notas
 
-- **Sem `ALLOWED_DOMAIN`** (versão genérica). A constante `mor.com.br` do
-  projeto original foi removida.
+- **Sem `ALLOWED_DOMAIN`** (versão genérica). A constante de domínio
+  fixo do projeto original foi removida.
 - **Sem `/me/bootstrap`**. O signup do Supabase Auth já dispara o
   trigger (se a tabela `profiles` tiver). Se não, o admin cria o profile
   manualmente via SQL: ver `../db/README.md`.
