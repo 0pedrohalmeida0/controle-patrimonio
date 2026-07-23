@@ -318,3 +318,34 @@ Quem quiser compose com frontend, adiciona.
 - O `bun.lock` / `package.json` específico do source (template tem suas próprias deps)
 - O `bunfig.toml` (não é necessário)
 - Componentes Lovable-específicos (`.lovable/`, `lovable-error-reporting.ts`)
+
+## 17. Divergências documentadas pelo backend (Python)
+
+Pequenos desvios do DESIGN.md feitos durante a implementação. Cada um tem
+uma justificativa; nenhum muda o contrato HTTP.
+
+- **Service role no CRUD normal (não só nas 3 RPCs).** O DESIGN.md
+  sugere "ideal é deixar o RLS cuidar" e usar `supabase_anon` carregando
+  o JWT do user. Como as policies ativas no DB (vide migration
+  `20260710015206_4c672c11-*.sql`) estão bem permissivas
+  (`Public read/write`), e como injetar o JWT do header no client
+  `supabase_anon` em cada chamada adiciona complexidade sem benefício
+  imediato, optei por usar `supabase_admin` no CRUD. As checagens de
+  role ficam no app, com mensagens em PT-BR. Trocar para `anon` é
+  mecânico (substituir `clients.admin` por `clients.anon` em cada
+  router) e fica documentado no `backend/README.md`.
+
+- **Settings lazy em `app/main.py`.** O `Settings()` do
+  `pydantic-settings` 2.14 falha no import se o env não tem os 3
+  campos required. Para os smoke tests rodarem sem Supabase real,
+  `get_settings()` é chamado só no `lifespan` e no CORS, não no
+  top-level.
+
+- **`enable_decoding=False` no `SettingsConfigDict`.** Necessário
+  porque `pydantic-settings` 2.14 tenta decodar `BACKEND_CORS_ORIGINS`
+  como JSON antes dos validators. CSV puro (`http://x,http://y`)
+  quebraria. Fix documentado e estável.
+
+- **PATCH em `/problems/{id}` aceita `description` também**, além do
+  `status` canônico. Foi conveniência, não contradição — `description`
+  raramente muda, mas é barato aceitar.
