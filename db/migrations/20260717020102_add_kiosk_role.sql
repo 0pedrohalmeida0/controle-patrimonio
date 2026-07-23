@@ -39,12 +39,9 @@ $$;
 GRANT EXECUTE ON FUNCTION public.can_kiosk(uuid) TO authenticated;
 REVOKE EXECUTE ON FUNCTION public.can_kiosk(uuid) FROM anon, public;
 
--- Domain bypass: o handle_new_user() rejeita emails fora de mor.com.br.
--- Para o user kiosk, queremos permitir um email dedicado (ex:
--- kiosk@mor.com.br) que respeita o domain restriction. Não precisa de
--- mudança aqui — basta o admin criar o user kiosk@mor.com.br via painel.
--- (Documentado no relatório USER_KIOSK_SETUP.md.)
-
--- Nota: não criamos o user kiosk aqui porque a auth.users é gerenciada
--- pelo Supabase Auth e não é mutável via SQL direto. A criação é feita
--- pelo admin via Supabase Dashboard ou via Edge Function.
+-- O user kiosk pode ser criado como qualquer outro user pelo admin
+-- (Supabase Dashboard → Authentication → Users). Após criar, promova
+-- com: `INSERT INTO user_roles (user_id, role) VALUES ('<uuid>', 'kiosk');`
+-- O handle_new_user() genérico (definido na migration
+-- 20260723020000_template_generic_onboarding.sql) aceita qualquer email
+-- e cria a row em `profiles` automaticamente.

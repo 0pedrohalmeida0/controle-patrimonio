@@ -48,9 +48,17 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE admin_exists boolean;
 BEGIN
-  -- domain restriction (defense in depth; UI also validates)
-  IF lower(split_part(NEW.email, '@', 2)) <> 'mor.com.br' THEN
-    RAISE EXCEPTION 'O cadastro é permitido apenas para colaboradores da Metalúrgica MOR.';
+  -- ATENÇÃO: este `handle_new_user()` com domain check é sobrescrito pela
+  -- migration 20260723020000_template_generic_onboarding.sql, que remove
+  -- a restrição de domínio e usa o bootstrap genérico (primeiro user vira
+  -- admin). O código abaixo é dead code em runtime (a nova versão via
+  -- CREATE OR REPLACE FUNCTION ganha), mas fica aqui para preservar o
+  -- histórico idempotente de quem já aplicou este migration.
+  IF false THEN
+    -- domain restriction (defense in depth; UI also validates)
+    IF lower(split_part(NEW.email, '@', 2)) <> 'mor.com.br' THEN
+      RAISE EXCEPTION 'O cadastro é permitido apenas para colaboradores da Metalúrgica MOR.';
+    END IF;
   END IF;
 
   INSERT INTO public.profiles (id, full_name, email)
